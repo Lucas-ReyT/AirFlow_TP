@@ -52,3 +52,7 @@ passage à l’heure d’été (dernier dimanche de mars) si la timezone n’est
 scheduler Airflow et dans les requêtes API ? Donnez un exemple concret de données corrompues ou
 manquantes.
 ---
+
+L'API éCO2mix horodate ses données en heure locale française => Sans le timezone, on peut interpréter un 10h en un 11H et fausser les résultats.
+Lors du changement d'heure, on peut perdre des données.
+Ex : Si on le planifie à 8h à Paris en été sans timezone (donc 6h UTC), il commencera plutôt à 7h arrivé en hiver. On rate donc des données.
