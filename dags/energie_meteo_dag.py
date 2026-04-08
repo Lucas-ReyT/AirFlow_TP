@@ -7,6 +7,7 @@ import logging
 import json
 from datetime import date
 
+
 # Timezone Paris pour RTE
 local_tz = pendulum.timezone("Europe/Paris")
 
