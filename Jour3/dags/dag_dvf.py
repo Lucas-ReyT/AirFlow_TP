@@ -52,9 +52,7 @@ def dvf_pipeline():
 
     @task()
     def verifier_sources():
-        """
-        Task 1: Healthcheck on external sources.
-        """
+
         results = {"url_ok": False, "postgres_ok": False, "hdfs_ok": False}
         
         try:
@@ -85,9 +83,7 @@ def dvf_pipeline():
 
     @task()
     def telecharger_dvf(verif: dict) -> str:
-        """
-        Task 2: Download DVF file in streaming.
-        """
+
         local_path = "/tmp/dvf_2023.csv"
         try:
             logger.info(f"Starting download from {DVF_URL}")
@@ -114,10 +110,7 @@ def dvf_pipeline():
 
     @task()
     def stocker_hdfs_raw(local_path: str) -> str:
-        """
-        Task 3: Upload to HDFS with partitioning (Bonus Ex 2 version).
-        Structure: /data/dvf/raw/annee=2023/dept=75/dvf_75_2023.csv
-        """
+
         hdfs_hook = WebHDFSHook(base_url=WEBHDFS_BASE_URL, user=WEBHDFS_USER)
         # For simplification in this script, we use fixed partitioning values
         # In a real scenario, we would parse the file to partition it
@@ -145,9 +138,7 @@ def dvf_pipeline():
 
     @task()
     def traiter_donnees(hdfs_path: str) -> dict:
-        """
-        Task 4: Read from HDFS using chunks to avoid memory issues (OOM).
-        """
+ 
         hdfs_hook = WebHDFSHook(base_url=WEBHDFS_BASE_URL, user=WEBHDFS_USER)
         try:
             # Read from HDFS
@@ -244,9 +235,7 @@ def dvf_pipeline():
 
     @task()
     def controler_qualite(resultats: dict) -> dict:
-        """
-        Bonus Task 1: Quality Control.
-        """
+
         try:
             # We would normally do this on the full/raw DF, but here we use stats from resultats
             nb_total = resultats["raw_count"]
@@ -284,9 +273,6 @@ def dvf_pipeline():
 
     @task()
     def inserer_postgresql(resultats: dict) -> int:
-        """
-        Task 5: Upsert results to Postgres.
-        """
         pg_hook = PostgresHook(postgres_conn_id=POSTGRES_CONN_ID)
         nb_inseres = 0
         try:
@@ -321,10 +307,7 @@ def dvf_pipeline():
 
     @task(trigger_rule=TriggerRule.ALL_DONE) 
     def generer_rapport(nb_inseres: int) -> str:
-        """
-        Task 6: Generate text report.
-        Note: TriggerRule.ALL_DONE to run even if previous tasks have failed/skipped (as per question context)
-        """
+    
         pg_hook = PostgresHook(postgres_conn_id=POSTGRES_CONN_ID)
         try:
             # Ranking query
@@ -358,9 +341,7 @@ def dvf_pipeline():
 
     @task()
     def analyser_tendances(rapport: str):
-        """
-        Bonus Task 2: Analyze trends.
-        """
+
         pg_hook = PostgresHook(postgres_conn_id=POSTGRES_CONN_ID)
         try:
             # Insert MoM variations
@@ -389,9 +370,7 @@ def dvf_pipeline():
 
     @task()
     def rafraichir_vue_materialisee():
-        """
-        Bonus Task 3: Refresh Materialized View.
-        """
+
         pg_hook = PostgresHook(postgres_conn_id=POSTGRES_CONN_ID)
         try:
             pg_hook.run("REFRESH MATERIALIZED VIEW dvf_evolution_mensuelle;")
